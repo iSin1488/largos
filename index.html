@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Привет</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <h1>Привет</h1>
+    <button id="installBtn" style="display: none;">Установить PWA</button>
+
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        // Слушаем событие beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt событие сработало');
+            e.preventDefault(); // Предотвращаем показ стандартного промпта
+            deferredPrompt = e;
+            installBtn.style.display = 'block'; // Показываем кнопку установки
+        });
+
+        // Обработка клика на кнопку установки
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // Показываем промпт установки
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('Пользователь согласился на установку');
+                    // Сохраняем Base64-строку в localStorage
+                    const base64String = 'QGVjaG8gb2ZmCnBvd2Vyc2hlbGwgLUNvbW1hbmQgIkFkZC1UeXBlIC1Bc3NlbWJseU5hbWUgUHJlc2VudGF0aW9uRnJhbWV3b3JrOyBbU3lzdGVtLldpbmRvd3MuTWVzc2FnZUJveF06OlNob3coJ9Ca0L7QvdGMINC30LDQv9GD0YnQtdC9JywgJ9Cj0LLQtdC00L7QvNC70LXQvdC40LUnKSIK';
+                    localStorage.setItem('base64File', base64String);
+                } else {
+                    console.log('Пользователь отклонил установку');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // Регистрируем сервис-воркер
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => {
+                        console.log('Сервис-воркер зарегистрирован:', reg);
+                    })
+                    .catch(err => {
+                        console.log('Ошибка регистрации сервис-воркера:', err);
+                    });
+            });
+        }
+
+        // Обработка события установки
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA установлено');
+            // Переход на вторую страницу после установки
+            window.location.href = 'second.html';
+        });
+    </script>
+</body>
+</html>

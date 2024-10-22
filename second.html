@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вторая страница</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Я 2-я страница, открываемая через PWA, которое будет приложением</h1>
+    <button id="downloadBtn">Получить результат</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            downloadBtn.addEventListener('click', () => {
+                // Получаем Base64-строку из localStorage
+                const base64String = localStorage.getItem('base64File');
+                if (base64String) {
+                    try {
+                        // Декодируем Base64 в бинарные данные
+                        const byteCharacters = atob(base64String);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+
+                        // Создаём ссылку для скачивания
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'rezulata.bat';
+                        document.body.appendChild(a);
+                        a.click();
+
+                        // Удаляем ссылку после скачивания
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    } catch (error) {
+                        console.error('Ошибка при декодировании Base64:', error);
+                        alert('Не удалось создать файл.');
+                    }
+                } else {
+                    alert('Файл не найден в localStorage.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
